@@ -82,14 +82,37 @@
         </div>
 
         <div class="controls__bottom-panel">
-            <div class="controls__play-statistics">                
-                <div class="video-time">Current time: {{ formattedCurrentTime }}</div>
-                <div class="video-buffered-time">Buffered time: {{ formattedBufferedTime }}</div>
-                <div class="video-duration">Duration: {{ formattedDuration }}</div>
+            <div class="controls__progress-bar">
+                <div class="controls__full-line">
+                    <div 
+                        class="controls__buffered-time"
+                        :style="{
+                            'width': `${(videoBufferedTime / videoDuration) * 100}%`
+                        }"
+                    ></div>
+                    <div 
+                        class="controls__current-time"
+                        :style="{
+                            'width': `${(videoCurrentTime / videoDuration) * 100}%`
+                        }"
+                    ></div>
+                    
+                </div>
             </div>
-            <div class="controls__fullscreen" @click="toggleFullScreen">
-                <Shrink v-if="isFullscreen"/>
-                <Expand v-else/>
+            <div class="controls__bottom-panel_bottom">
+                <div class="controls__play">
+                    <Pause v-if="isVideoPlay" @click="pauseVideo"/>
+                    <Play v-else class="controls__main-button-play" @click="playVideo"/>
+                </div>
+                <div class="controls__play-statistics">                
+                    <div class="video-time">Current time: {{ formattedCurrentTime }}</div>
+                    <div class="video-buffered-time">Buffered time: {{ formattedBufferedTime }}</div>
+                    <div class="video-duration">Duration: {{ formattedDuration }}</div>
+                </div>
+                <div class="controls__fullscreen" @click="toggleFullScreen">
+                    <Shrink v-if="isFullscreen"/>
+                    <Expand v-else/>
+                </div>
             </div>
         </div>
 
@@ -136,19 +159,58 @@
         margin-left: 2px
     .controls__bottom-panel
         position: absolute
-        bottom: 4px
+        bottom: 0
         width: 100%
         display: flex
+        flex-direction: column
         justify-content: space-between
         padding: 2px 4px
         
         background: linear-gradient(0deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 100%)
         transition: all 0.4s ease
 
+    .controls__progress-bar
+        width: 100%
+        height: 16px
+        display: flex
+        align-items: center
+        justify-content: center
+
+    .controls__full-line
+        position: relative
+        width: 90%
+        height: 4px
+
+        background-color: rgba(255, 255, 255, 0.6)
+
+    .controls__buffered-time
+        position: absolute
+        height: 100%
+        top: 0
+        z-index: 2
+
+        background-color: #fff
+
+    .controls__current-time
+        position: absolute
+        height: 100%
+        top: 0
+        z-index: 3
+
+        background-color: $primary-color
+
+
+    .controls__bottom-panel_bottom
+        display: flex
+        justify-content: space-between
+
     .controls__play-statistics
         display: flex
         gap: 10px
 
+    .controls__play:hover svg
+        stroke: $primary-color
+        cursor: pointer
 
     .controls__fullscreen:hover svg
         stroke: $primary-color

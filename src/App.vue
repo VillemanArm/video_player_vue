@@ -124,7 +124,6 @@
 
     video
         width: 100%
-        // height: 450px
         position: relative
         z-index: 1          
 
