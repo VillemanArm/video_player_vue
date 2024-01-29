@@ -15,6 +15,7 @@
                 videoDuration: 0,
                 isVideoPlay: false,
                 isFullscreen: false,
+                isVideoLoading: false,
             }
         },
         methods: {
@@ -48,28 +49,33 @@
                 else {
                     document.exitFullscreen();
                     this.isFullscreen = false
-                }
-                                
-
-
+                }                            
             },
+            getVideo() {
+                try{             
+                    const hls = new Hls();
+                    hls.loadSource(this.videoURL);
+                    hls.attachMedia(this.$refs.video);
+
+                    hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
+                        if (data.type === 'video') {
+                            this.videoBufferedTime = Math.round(data.frag.end)
+                        }
+                });               
+                } catch(error) {
+                    console.error(error.message)
+                }
+            },
+            async loadVideo() {
+                this.isVideoLoading = true
+                await this.getVideo()
+                this.isVideoLoading = false
+            }
 
         },
         watch: {},
         mounted() {
-            try{
-                const hls = new Hls();
-                hls.loadSource(this.videoURL);
-                hls.attachMedia(this.$refs.video);
-
-                hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
-                    if (data.type === 'video') {
-                        this.videoBufferedTime = Math.round(data.frag.end)
-                    }
-                });
-            } catch(error) {
-                console.error(error.message)
-            }
+            this.loadVideo()
         },
         computed: {},
     }
@@ -93,6 +99,7 @@
             :videoCurrentTime="videoCurrentTime"
             :isVideoPlay="isVideoPlay"
             :isFullscreen="isFullscreen"
+            :isVideoLoading="isVideoLoading"
             :playVideo="playVideo"
             :pauseVideo="pauseVideo"
             :toggleFullScreen="toggleFullScreen"

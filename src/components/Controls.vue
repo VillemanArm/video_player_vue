@@ -1,14 +1,12 @@
 <script>
-    import { Pause, Expand, Shrink } from 'lucide-vue-next';
+    import { Expand, Shrink } from 'lucide-vue-next';
     import  Play from './Play.vue';
+    import  Pause from './Pause.vue';
+    import  Spinner from './Spinner.vue';
     
     //TODO: сделать управляемый ползунок
-    //TODO: сделать скрытие управления в fullscreen
-    //TODO: сделать анимацию загрузки
-    //TODO: отредактировать иконку паузы
-
     export default {
-        components: { Play, Pause, Expand, Shrink },
+        components: { Play, Pause, Expand, Shrink, Spinner },
         props: {
             playVideo: {
                 type: Function,
@@ -35,6 +33,10 @@
                 required: true,
             },
             isFullscreen: {
+                type: Boolean,
+                required: true,
+            },
+            isVideoLoading: {
                 type: Boolean,
                 required: true,
             },
@@ -87,11 +89,13 @@
         ref="controls" 
         class="controls__wrapper" 
         @mousemove="toggleControls()"
-        @mouseleave="hideControls()"
-        
-        >
+        @mouseleave="hideControls()"        
+    >
+    
+
         <div class="controls__main-button" ref="mainButton">
-            <Pause v-if="isVideoPlay" @click="pauseVideo"/>
+            <Spinner v-if="isVideoLoading"/>
+            <Pause v-else-if="isVideoPlay" @click="pauseVideo"/>
             <Play v-else class="controls__main-button-play" @click="playVideo"/>
         </div>
 
