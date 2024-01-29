@@ -1,8 +1,6 @@
 <script>
     import Hls from "hls.js"
     import Controls from "@/components/Controls.vue"
-    // import { Play } from 'lucide-vue-next';
-
 
 
     export default {
@@ -19,9 +17,6 @@
             }
         },
         methods: {
-            showVideoParams() {
-                console.log(this.$refs.video.buffered)
-            },
             getCurrentTime(time) {
                 this.videoCurrentTime = Math.floor(time)                
             },
@@ -70,12 +65,22 @@
                 this.isVideoLoading = true
                 await this.getVideo()
                 this.isVideoLoading = false
+            },
+            rewindVideo(event) {
+                const clickPosition = event.offsetX
+                const fullLength = event.target.closest('.controls__full-line').offsetWidth 
+
+                this.$refs.video.currentTime = this.videoDuration * clickPosition / fullLength
+            },
+            restartVideo() {
+                this.isVideoPlay = false
+                this.$refs.video.currentTime = 0
             }
 
         },
         watch: {},
         mounted() {
-            this.loadVideo()
+            this.loadVideo()            
         },
         computed: {},
     }
@@ -90,6 +95,7 @@
             ref="video"           
             @timeupdate="e => {getCurrentTime(e.target.currentTime)}"
             @canplay="getVideoDuration()"
+            @ended="restartVideo()"
         ></video>
 
         <Controls 
@@ -103,8 +109,8 @@
             :playVideo="playVideo"
             :pauseVideo="pauseVideo"
             :toggleFullScreen="toggleFullScreen"
+            :rewindVideo="rewindVideo"
         />
-
 
     </div>
 </template>

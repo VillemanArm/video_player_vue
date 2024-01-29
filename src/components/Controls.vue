@@ -4,7 +4,7 @@
     import  Pause from './Pause.vue';
     import  Spinner from './Spinner.vue';
     
-    //TODO: сделать управляемый ползунок
+
     export default {
         components: { Play, Pause, Expand, Shrink, Spinner },
         props: {
@@ -44,11 +44,14 @@
                 type: Function,
                 required: true,
             },
+            rewindVideo: {
+                type: Function,
+                required: true,
+            },
         },
         data() {
             return {
                 
-
             }
         },
         methods: {
@@ -92,7 +95,6 @@
         @mouseleave="hideControls()"        
     >
     
-
         <div class="controls__main-button" ref="mainButton">
             <Spinner v-if="isVideoLoading"/>
             <Pause v-else-if="isVideoPlay" @click="pauseVideo"/>
@@ -101,7 +103,7 @@
 
         <div class="controls__bottom-panel">
             <div class="controls__progress-bar">
-                <div class="controls__full-line">
+                <div class="controls__full-line" @click="e => rewindVideo(e)" >
                     <div 
                         class="controls__buffered-time"
                         :style="{
@@ -134,8 +136,6 @@
             </div>
         </div>
 
-        <!-- <Play class="play"/> -->
-
     </div>
 </template>
 
@@ -154,8 +154,7 @@
         font-family: 'Ubuntu', sans-serif
 
         color: #fff
-        transition: all 0.4s ease
-        
+        transition: all 0.4s ease  
 
     .controls__main-button
         align-self: center
@@ -176,6 +175,7 @@
 
     .controls__main-button-play
         margin-left: 2px
+
     .controls__bottom-panel
         position: absolute
         bottom: 0
@@ -201,6 +201,7 @@
         height: 4px
 
         background-color: rgba(255, 255, 255, 0.6)
+        cursor: pointer  
 
     .controls__buffered-time
         position: absolute
@@ -209,6 +210,7 @@
         z-index: 2
 
         background-color: #fff
+        transition: all 0.4s ease
 
     .controls__current-time
         position: absolute
@@ -217,7 +219,7 @@
         z-index: 3
 
         background-color: $primary-color
-
+        transition: all 0.4s ease
 
     .controls__bottom-panel_bottom
         display: flex
