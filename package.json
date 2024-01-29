@@ -1,5 +1,5 @@
 {
-  "name": "second_vue_project",
+  "name": "vue_project",
   "version": "0.0.0",
   "private": true,
   "publicPath": "./",
@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "axios": "^1.6.4",
+    "hls.js": "^1.5.2",
+    "lucide": "^0.316.0",
     "lucide-vue-next": "^0.302.0",
     "vue": "^3.3.11"
   },

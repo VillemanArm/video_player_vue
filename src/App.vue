@@ -1,103 +1,102 @@
 <script>
-    // import axios from "axios"
-    import MessageInput from "@/components/MessageInput.vue"
-    import Message from "@/components/Message.vue"
-    import ChatPanel from "@/components/ChatPanel.vue"
+    import Hls from "hls.js"
+    import Controls from "@/components/Controls.vue"
+    // import { Play } from 'lucide-vue-next';
+
+
 
     export default {
-        components: { MessageInput, Message, ChatPanel },
+        components: { Controls },
         data() {
             return {
-                isWaiting: false,
-                isBotDisabled: true,
-                messages: [
-                    {
-                        from: "bot",
-                        date: Date.now(),
-                        text: "Привет!\nЧто я могу для Вас сделать?",
-                        buttons: [
-                            "Заказать пиццу",
-                            "Установить будильник",
-                            "Вывести погоду",
-                        ],
-                    },
-                ],
+                videoURL: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8',
+                videoCurrentTime: 0,
+                videoBufferedTime: 0,
+                videoDuration: 0,
+                isVideoPlay: false,
+                isFullscreen: false,
             }
         },
         methods: {
-            sendMessage(newMessage) {
-                this.messages = [...this.messages, newMessage]
-                this.isWaiting = true
-                this.delButtons()
+            showVideoParams() {
+                console.log(this.$refs.video.buffered)
             },
-            getBotAnswer(messages) {
-                const lastMessage = messages[messages.length - 1]
-                if (lastMessage.from === "user") {
-                    const answer = {
-                        from: "bot",
-                        date: Date.now(),
-                        text: "ответ\nЧто-нибудь еще?",
-                        buttons: [
-                            "Заказать пиццу",
-                            "Установить будильник",
-                            "Вывести погоду",
-                        ],
-                    }
-                    if (lastMessage.text === "Заказать пиццу") {
-                        answer.text = "Пицца заказана! Что-нибудь еще?"
-                    } else if (lastMessage.text === "Установить будильник") {
-                        answer.text = "Будильник установлен! Что-нибудь еще?"
-                    } else if (lastMessage.text === "Вывести погоду") {
-                        answer.text = "В Москве +10°C, пасмурно.  Что-нибудь еще?"
-                    }
-                    this.messages.push(answer)
+            getCurrentTime(time) {
+                this.videoCurrentTime = Math.floor(time)                
+            },
+            getVideoDuration() {
+                this.videoDuration = this.$refs.video.duration
+            },
+            playVideo() {
+                this.$refs.video.play()
+                this.isVideoPlay = true
+            },
+            pauseVideo() {
+                this.$refs.video.pause()
+                this.isVideoPlay = false
+            },
+            toggleFullScreen() {
+                const container = document.querySelector('.video-player');
+                const fullscreenApi = container.requestFullscreen
+                    || container.webkitRequestFullScreen
+                    || container.mozRequestFullScreen
+                    || container.msRequestFullscreen;
+                if (!document.fullscreenElement) {
+                    fullscreenApi.call(container);
+                    this.isFullscreen = true
                 }
-            },
-            switchChat() {
-                this.isBotDisabled = !this.isBotDisabled
-                this.$refs.chat.classList.toggle("hidden")
-            },
-            delButtons() {
-                if (this.messages[this.messages.length - 2].from === "bot") {
-                    this.messages[this.messages.length - 2].buttons = []
+                else {
+                    document.exitFullscreen();
+                    this.isFullscreen = false
                 }
+                                
+
+
             },
+
         },
-        watch: {
-            async messages(messages) {
-                await new Promise((resolve) => {
-                    setTimeout(() => {
-                        this.getBotAnswer(messages)
-                        resolve()
-                    }, 2000)
-                })
-                this.isWaiting = false
-            },
+        watch: {},
+        mounted() {
+                const hls = new Hls();
+                hls.loadSource(this.videoURL);
+                hls.attachMedia(this.$refs.video);
+
+                hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
+                    if (data.type === 'video') {
+                        this.videoBufferedTime = Math.round(data.frag.end)
+                    }
+
+                });
+            
         },
-        mounted() {},
+        computed: {},
     }
 </script>
 
+
 <template>
-    <div class="chat-wrapper">
-        <ChatPanel
-            :switchChat="switchChat"
-            :isBotDisabled="isBotDisabled"
-            :isWaiting="isWaiting"
+
+    <div class="video-player">
+        <div class="video-player__background"></div>
+        <video 
+            ref="video"           
+            @timeupdate="e => {getCurrentTime(e.target.currentTime)}"
+            @canplay="getVideoDuration()"
+        ></video>
+
+        <Controls 
+            class="video-player__controls"
+            :videoBufferedTime="videoBufferedTime"
+            :videoDuration="videoDuration"
+            :videoCurrentTime="videoCurrentTime"
+            :isVideoPlay="isVideoPlay"
+            :isFullscreen="isFullscreen"
+            :playVideo="playVideo"
+            :pauseVideo="pauseVideo"
+            :toggleFullScreen="toggleFullScreen"
         />
-        <div ref="chat" class="chat hidden">
-            <div class="message-list">
-                <Message
-                    v-for="message in messages"
-                    :key="message.date"
-                    :message="message"
-                    :sendMessage="sendMessage"
-                    :delButtons="delButtons"
-                />
-            </div>
-            <MessageInput class="message-input" :sendMessage="sendMessage">
-            </MessageInput>
-        </div>
+
+
     </div>
 </template>
 
@@ -105,48 +104,28 @@
 
 <style lang="sass">
     @import "./assets/constants.sass"
-    .chat-wrapper
-        display: inline-block
-        position: absolute
 
-    .chat
-        width: 310px
-        height: 600px
-        padding-top: 54px
+    .video-player
+        width: 600px
         position: relative
         display: flex
-        flex-direction: column
+    
+    .video-player:fullscreen
+        background-color: #fff
+        width: 100vw
 
-        font-family: 'Ubuntu', sans-serif
-        font-size: 14px
-
-        background-image: url('/src/assets/img/background.jpg')
-        background-position: -84px -4px
-        background-size: 160%
-        border-radius: 24px 12px 12px 12px
-        border: 2px solid $secondary-color
-        overflow-x: no-scroll
-        transition: all 0.5s ease
-
-    .chat-wrapper
-        position: relative
-
-    .message-list
+    .video-player__background
+        width: 100%
         height: 100%
-        padding: 0 6px
-        overflow-y: auto
-
-        &::-webkit-scrollbar
-            width: 6px
-
-        &::-webkit-scrollbar-thumb
-            background-color: $primary-color
-            border-radius: 10px
-
-    .message-input
         position: absolute
-        align-self: start
+        z-index: 0
 
-    .hidden
-        transform: translate(-135px, -275px) scale(0.05)
+        background-color: #000
+
+    video
+        width: 100%
+        // height: 450px
+        position: relative
+        z-index: 1          
+
 </style>
