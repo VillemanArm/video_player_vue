@@ -2,6 +2,11 @@
     import { Pause, Expand, Shrink } from 'lucide-vue-next';
     import  Play from './Play.vue';
     
+    //TODO: сделать управляемый ползунок
+    //TODO: сделать скрытие управления в fullscreen
+    //TODO: сделать анимацию загрузки
+    //TODO: отредактировать иконку паузы
+
     export default {
         components: { Play, Pause, Expand, Shrink },
         props: {
@@ -45,12 +50,12 @@
             }
         },
         methods: {
-            togglePanels() {
+            toggleControls() {
                 this.$refs.controls.style.opacity = '1'
                 let mouseTimer
                 clearTimeout(mouseTimer);
                 mouseTimer = setTimeout(() => {
-                    if (this.isVideoPlay) this.$refs.controls.style.opacity = '0'
+                    if (this.isVideoPlay && this.isFullscreen) this.$refs.controls.style.opacity = '0'
                 }, 2000)                
             },
             formatTime(seconds) {
@@ -58,7 +63,10 @@
                 const formatedMinutes = ('0' + Math.floor(seconds / 60) % 60).slice(-2)
                 const formatedHours = Math.floor(seconds / 3600)
                 return `${formatedHours ? formatedHours + ':' : ''}${formatedMinutes}:${formatedSeconds}`
-            }
+            },
+            hideControls() {
+                if (this.isVideoPlay) this.$refs.controls.style.opacity = '0'
+            },
         },
         computed: {
             formattedDuration() {
@@ -75,7 +83,13 @@
 </script>
 
 <template>
-    <div ref="controls" class="controls__wrapper" @mousemove="togglePanels()">
+    <div 
+        ref="controls" 
+        class="controls__wrapper" 
+        @mousemove="toggleControls()"
+        @mouseleave="hideControls()"
+        
+        >
         <div class="controls__main-button" ref="mainButton">
             <Pause v-if="isVideoPlay" @click="pauseVideo"/>
             <Play v-else class="controls__main-button-play" @click="playVideo"/>
@@ -136,6 +150,7 @@
         font-family: 'Ubuntu', sans-serif
 
         color: #fff
+        transition: all 0.4s ease
         
 
     .controls__main-button
@@ -203,10 +218,14 @@
     .controls__bottom-panel_bottom
         display: flex
         justify-content: space-between
+        align-items: center
 
     .controls__play-statistics
         display: flex
         gap: 10px
+        margin-bottom: 2px
+
+        font-size: 14px
 
     .controls__play:hover svg
         stroke: $primary-color

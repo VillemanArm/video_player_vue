@@ -57,6 +57,7 @@
         },
         watch: {},
         mounted() {
+            try{
                 const hls = new Hls();
                 hls.loadSource(this.videoURL);
                 hls.attachMedia(this.$refs.video);
@@ -65,9 +66,10 @@
                     if (data.type === 'video') {
                         this.videoBufferedTime = Math.round(data.frag.end)
                     }
-
                 });
-            
+            } catch(error) {
+                console.error(error.message)
+            }
         },
         computed: {},
     }
