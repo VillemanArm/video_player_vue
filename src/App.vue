@@ -68,7 +68,7 @@
             },
             rewindVideo(event) {
                 const clickPosition = event.offsetX
-                const fullLength = event.target.closest('.controls__full-line').offsetWidth 
+                const fullLength = event.currentTarget.offsetWidth 
 
                 this.$refs.video.currentTime = this.videoDuration * clickPosition / fullLength
             },
